@@ -1,0 +1,76 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import CubicSpline
+
+#datos
+
+f = np.array([
+100,120,145,170,200,235,270,310,355,405,
+460,520,585,655,730,810,895,985,1080,1180,
+1290,1410,1540,1680,1830,1990,2160,2340,2530,2730
+])
+
+Z = np.array([
+152.3,149.1,146.8,144.9,142.0,139.5,137.9,136.1,134.8,133.6,
+132.7,131.9,131.4,131.1,130.9,131.0,131.3,131.9,132.7,133.8,
+135.2,136.9,138.9,141.1,143.5,146.1,149.0,152.2,155.6,159.2
+])
+
+#polinomio 10
+
+grado = 10
+
+# normalizacion
+f_mean = np.mean(f)
+f_std = np.std(f)
+f_norm = (f - f_mean) / f_std
+
+# matriz de vandermonde
+A = np.vander(f_norm, grado + 1)
+
+# ajuste por minimos cuadrados
+coef, _, _, _ = np.linalg.lstsq(A, Z, rcond=None)
+
+# funcion
+def p(x):
+    x_norm = (x - f_mean) / f_std
+    return np.polyval(coef, x_norm)
+
+#uso del spline cubico natural
+
+spline = CubicSpline(f, Z, bc_type='natural')
+
+# malla fina para comparar
+
+f_fino = np.linspace(f.min(), f.max(), 500)
+
+Z_poly = p(f_fino)
+Z_spline = spline(f_fino)
+
+# calculamos z 1000hz pero con el spline cubico
+
+Z_1000_poly = p(1000)
+Z_1000_spline = spline(1000)
+
+print(" ")
+print("Resultados de 1000HZ")
+print("-------------------------------------")
+print("Polinomio grado 10 :", Z_1000_poly)
+print("Spline cúbico      :", Z_1000_spline)
+print("-------------------------------------\n")
+
+# graficamos para comparar
+
+plt.figure(figsize=(10,6))
+
+plt.plot(f, Z, 'o', label='Datos experimentales')
+plt.plot(f_fino, Z_poly, label='Polinomio grado 10')
+plt.plot(f_fino, Z_spline, label='Spline cubico natural')
+
+plt.xlabel("Frecuencia (Hz)")
+plt.ylabel("|Z| (Ohm)")
+plt.title("Comparación: Polinomio vs Spline Cúbico")
+plt.grid()
+plt.legend()
+
+plt.show()
