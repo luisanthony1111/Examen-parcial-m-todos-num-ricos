@@ -14,18 +14,20 @@ Z = np.array([
 135.2,136.9,138.9,141.1,143.5,146.1,149.0,152.2,155.6,159.2
 ])
 
-# grado del polinomio siendo el mas recomendable
+# grado del polinomio siendo el mas recomendable para estimar valores intermedios
 grado = 10
 
-# se normaliza la frecuencia con el promedio pq son muchos datos
+# se normaliza la frecuencia con el promedio pq son muchos datos para evitar errores
 f_media = np.mean(f)
 f_std = np.std(f)
 f_norm = (f - f_media) / f_std
 
-# matriz de vandermonde
+# matriz de vandermonde, recomendada por la ia pq es una representación estándar del 
+# problema de interpolación polinómica en forma matricial aparte de la spline que despues hare
 A = np.vander(f_norm, grado + 1)
 
 # usamos los minimos cuadrados
+# recomendacion de la ia, usar este modelo pq no es un sistema cuadrado por los datos
 coef, _, _, _ = np.linalg.lstsq(A, Z, rcond=None)
 
 # la funcion
